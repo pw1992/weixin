@@ -1,13 +1,12 @@
 package cache
 
 import (
-	"os"
 	"testing"
 	"time"
 )
 
 func TestFile_Set(t *testing.T) {
-	file := NewFile(os.TempDir() + "/.cache")
+	file := NewFile()
 	ok := file.Set("name1", "pw", time.Now().Second())
 	if !ok {
 		t.Error("fail")
@@ -15,7 +14,7 @@ func TestFile_Set(t *testing.T) {
 }
 
 func TestFile_Get(t *testing.T) {
-	file := NewFile(os.TempDir() + "/.cache")
+	file := NewFile()
 	file.Set("name12", "张三", time.Now().Second())
 
 	val := file.Get("name12", 111)
@@ -46,7 +45,7 @@ func TestFile_Get(t *testing.T) {
 }
 
 func TestCache_Delete(t *testing.T) {
-	cache := NewFile(os.TempDir())
+	cache := NewFile()
 	cache.Set("test-delete", "test-delete-val", 100)
 
 	cache.Delete("test-delete")

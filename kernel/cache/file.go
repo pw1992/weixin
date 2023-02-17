@@ -4,10 +4,12 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/pw1992/weixin/kernel/config"
 	"github.com/pw1992/weixin/kernel/serror"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -15,22 +17,32 @@ type File struct {
 	Path string
 }
 
-func NewFile(path string) *File {
+func NewFile() *File {
+	//获取缓存存储的位置
+	newConfig := config.NewConfig()
+	path := newConfig.GetString("cachePath")
+	if len(path) == 0 {
+		serror.NewError("缓存配置地址不存在", 500, nil).Throw()
+	}
+
+	abspath, _ := filepath.Abs("")
+	index := strings.Index(abspath, "weixin")
+	path = abspath[:index+6] + "/" + path
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.MkdirAll(path, os.ModeDir)
+	}
 	return &File{Path: path}
 }
 
 // 获取缓存
 func (f *File) Get(key string, defaults ...interface{}) interface{} {
-	path := os.TempDir()
-	if len(f.Path) > 0 {
-		path, _ = filepath.Abs(f.Path)
-	}
+
 	md5 := md5.New()
 	md5.Write([]byte(key))
 	str := hex.EncodeToString(md5.Sum(nil))
 	file := str[:1]
 
-	if _, err := os.Stat(filepath.Join(path, file)); os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(f.Path, file)); os.IsNotExist(err) {
 		if len(defaults) > 0 {
 			return defaults[0]
 		} else {
@@ -38,7 +50,7 @@ func (f *File) Get(key string, defaults ...interface{}) interface{} {
 		}
 	}
 
-	data, err := ioutil.ReadFile(filepath.Join(path, file))
+	data, err := ioutil.ReadFile(filepath.Join(f.Path, file))
 	if err != nil {
 		serror.NewError("读取创建缓存文件失败:"+err.Error(), 500, err)
 		return nil
@@ -82,7 +94,7 @@ func (f *File) Get(key string, defaults ...interface{}) interface{} {
 			return nil
 		}
 
-		ioutil.WriteFile(filepath.Join(path, file), marshal, os.ModePerm)
+		ioutil.WriteFile(filepath.Join(f.Path, file), marshal, os.ModePerm)
 		return nil
 	}
 	return vv["value"]
@@ -90,24 +102,16 @@ func (f *File) Get(key string, defaults ...interface{}) interface{} {
 
 // 设置缓存
 func (f *File) Set(key string, value interface{}, ttl int) bool {
-	path := os.TempDir()
-	if len(f.Path) > 0 {
-		path, _ = filepath.Abs(f.Path)
-	}
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		os.MkdirAll(path, os.ModeDir)
-	}
-
 	md5 := md5.New()
 	md5.Write([]byte(key))
 	str := hex.EncodeToString(md5.Sum(nil))
 	file := str[:1]
 
-	if _, err := os.Stat(filepath.Join(path, file)); os.IsNotExist(err) {
-		os.Create(filepath.Join(path, file))
+	if _, err := os.Stat(filepath.Join(f.Path, file)); os.IsNotExist(err) {
+		os.Create(filepath.Join(f.Path, file))
 	}
 
-	openFile, err := os.OpenFile(filepath.Join(path, file), os.O_RDWR, os.ModePerm)
+	openFile, err := os.OpenFile(filepath.Join(f.Path, file), os.O_RDWR, os.ModePerm)
 	defer openFile.Close()
 	if err != nil {
 		serror.NewError("读取创建缓存文件失败:"+err.Error(), 500, err).Throw()
@@ -127,7 +131,7 @@ func (f *File) Set(key string, value interface{}, ttl int) bool {
 
 	data, _ := json.Marshal(allDataMap)
 	if len(data) > 0 {
-		ioutil.WriteFile(filepath.Join(path, file), data, os.ModePerm)
+		ioutil.WriteFile(filepath.Join(f.Path, file), data, os.ModePerm)
 	}
 	return true
 }

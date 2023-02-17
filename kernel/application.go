@@ -7,8 +7,6 @@ import (
 	"github.com/pw1992/weixin/kernel/contracts"
 	"github.com/pw1992/weixin/kernel/serror"
 	"github.com/pw1992/weixin/kernel/slog"
-	"github.com/spf13/viper"
-	"os"
 )
 
 type Application struct {
@@ -20,10 +18,23 @@ type Application struct {
 }
 
 func NewApplication() *Application {
-	return &Application{
-		Config:     config.NewConfig(viper.New()),
+	app := &Application{
+		Config:     config.NewConfig(),
 		HttpClient: weixin.NewHttpClient(),
 		Log:        slog.New(),
-		Cache:      cache.NewFile(os.TempDir()),
+		Cache:      nil,
 	}
+
+	//设置换粗适配器
+	cacheAdapter := app.Config.GetString("cacheAdapter")
+	switch cacheAdapter {
+	case "redis":
+		//TODO
+	case "file":
+		app.Cache = cache.NewFile()
+	default:
+		app.Cache = cache.NewFile()
+	}
+
+	return app
 }
