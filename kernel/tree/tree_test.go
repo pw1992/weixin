@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"github.com/pw1992/weixin/kernel"
 	"testing"
 )
 
@@ -15,7 +14,7 @@ func TestGenTree(t *testing.T) {
 		}
 	}
 
-	kernel.DD(root.Find(root.root, rune('p')))
+	//kernel.DD(root.Find(root.root, rune('p')))
 	//
 	//root := &Root{
 	//	root: nil,

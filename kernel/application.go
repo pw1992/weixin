@@ -29,7 +29,7 @@ func NewApplication() *Application {
 	cacheAdapter := app.Config.GetString("cacheAdapter")
 	switch cacheAdapter {
 	case "redis":
-		//TODO
+		app.Cache = cache.NewRedis()
 	case "file":
 		app.Cache = cache.NewFile()
 	default:

@@ -34,9 +34,8 @@ func NewAccessToken() *AccessToken {
 func (a *AccessToken) GetToken() string {
 	//从缓存中取
 	access_token := a.Application.Cache.Get(a.CachePrefix+a.TokenKey, nil)
-
 	if access_token != nil {
-		//return access_token.(string)
+		return access_token.(string)
 	}
 
 	corpid := a.Application.Config.GetString("corpid")

@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 )
 
 func DD(args ...interface{}) {
@@ -36,4 +38,14 @@ func JsonEncode(i interface{}) (jsonstr string) {
 		return "{}"
 	}
 	return string(jsonbytes)
+}
+
+func GetRootPath(activePath string) string {
+	abs, err := filepath.Abs(activePath)
+	if err != nil {
+		panic(err)
+	}
+	index := strings.Index(abs, "weixin")
+	rootpath := abs[0 : index+6]
+	return filepath.Join(rootpath, activePath)
 }

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/pw1992/weixin/kernel/serror"
 	"github.com/spf13/viper"
 	"os"
@@ -14,10 +13,6 @@ type Config struct {
 }
 
 func NewConfig(args ...string) *Config {
-	abspath, _ := filepath.Abs("%$HOME%")
-	index := strings.Index(abspath, "weixin")
-
-	fmt.Println("%$HOME%", abspath[:index+6])
 	c := &Config{viper.New()}
 	c.Viper.SetConfigType("yaml")
 	c.Viper.SetConfigName("weixin")
@@ -51,4 +46,7 @@ func (c *Config) GetBool(key string) bool {
 }
 func (c *Config) GetStringMap(key string) map[string]interface{} {
 	return c.Viper.GetStringMap(key)
+}
+func (c *Config) Get(key string) map[string]string {
+	return c.Viper.GetStringMapString(key)
 }
